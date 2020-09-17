@@ -1131,6 +1131,8 @@ message PriorBoxParameter {
 
   // Offset to the top left corner of each cell.
   optional float offset = 13 [default = 0.5];
+  
+  optional bool use_default_aspect_ratio = 16 [default = true];  
 }
 
 message PSROIPoolingParameter {

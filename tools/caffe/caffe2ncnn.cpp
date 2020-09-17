@@ -1374,12 +1374,12 @@ int main(int argc, char** argv)
         else if (layer.type() == "PriorBox")
         {
             const caffe::PriorBoxParameter& prior_box_param = layer.prior_box_param();
-
+	    bool b_useDefault_aspect_ratio = prior_box_param.use_default_aspect_ratio();
             int num_aspect_ratio = prior_box_param.aspect_ratio_size();
             for (int j = 0; j < prior_box_param.aspect_ratio_size(); j++)
             {
                 float ar = prior_box_param.aspect_ratio(j);
-                if (fabs(ar - 1.) < 1e-6)
+                if (fabs(ar - 1.) < 1e-6 && b_useDefault_aspect_ratio)
                 {
                     num_aspect_ratio--;
                 }
@@ -1443,7 +1443,7 @@ int main(int argc, char** argv)
             for (int j = 0; j < prior_box_param.aspect_ratio_size(); j++)
             {
                 float ar = prior_box_param.aspect_ratio(j);
-                if (fabs(ar - 1.) < 1e-6)
+                if (fabs(ar - 1.) < 1e-6 && b_useDefault_aspect_ratio)
                 {
                     continue;
                 }
