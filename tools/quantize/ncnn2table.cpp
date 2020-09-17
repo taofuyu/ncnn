@@ -516,6 +516,7 @@ struct PreParam
     int width;
     int height;
     bool swapRB;
+    bool gray;
 };
 
 static int post_training_quantize(const std::vector<std::string>& image_list, const std::string& param_path, const std::string& bin_path, const std::string& table_path, struct PreParam& per_param)
@@ -534,6 +535,7 @@ static int post_training_quantize(const std::vector<std::string>& image_list, co
     int width = per_param.width;
     int height = per_param.height;
     bool swapRB = per_param.swapRB;
+    bool gray = per_param.gray;
 
     mean_vals[0] = per_param.mean[0];
     mean_vals[1] = per_param.mean[1];
@@ -610,7 +612,12 @@ static int post_training_quantize(const std::vector<std::string>& image_list, co
             return -1;
         }
 
-        ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, swapRB ? ncnn::Mat::PIXEL_BGR2RGB : ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, width, height);
+        ncnn::Mat in;
+        if (!gray)
+            in = ncnn::Mat::from_pixels_resize(bgr.data, swapRB ? ncnn::Mat::PIXEL_BGR2RGB : ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, width, height);
+        else
+            in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2GRAY, bgr.cols, bgr.rows, width, height);
+
         in.substract_mean_normalize(mean_vals, norm_vals);
 
         ncnn::Extractor ex = net.create_extractor();
@@ -672,7 +679,12 @@ static int post_training_quantize(const std::vector<std::string>& image_list, co
             return -1;
         }
 
-        ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, swapRB ? ncnn::Mat::PIXEL_BGR2RGB : ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, width, height);
+        ncnn::Mat in;
+        if (!gray)
+            in = ncnn::Mat::from_pixels_resize(bgr.data, swapRB ? ncnn::Mat::PIXEL_BGR2RGB : ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, width, height);
+        else
+            in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2GRAY, bgr.cols, bgr.rows, width, height);
+
         in.substract_mean_normalize(mean_vals, norm_vals);
 
         ncnn::Extractor ex = net.create_extractor();
@@ -827,6 +839,7 @@ int main(int argc, char** argv)
                           "{norm n         |   | value of normalize (scale value, default is 1.0,1.0,1.0) }"
                           "{size s         |   | the size of input image(using the resize the original image,default is w=224,h=224) }"
                           "{swapRB c       |   | flag which indicates that swap first and last channels in 3-channel image is necessary }"
+                          "{swapGray g     |   | flag which indicates that swap to grayscale image is necessary }"
                           "{thread t       | 4 | count of processing threads }";
 
 #if CV_MAJOR_VERSION < 3
@@ -865,15 +878,16 @@ int main(int argc, char** argv)
     const int num_threads = parser.get<int>("thread");
 
     struct PreParam pre_param;
-    pre_param.mean[0] = 104.f;
-    pre_param.mean[1] = 117.f;
-    pre_param.mean[2] = 103.f;
-    pre_param.norm[0] = 1.f;
-    pre_param.norm[1] = 1.f;
-    pre_param.norm[2] = 1.f;
+    pre_param.mean[0] = 0.f;
+    pre_param.mean[1] = 0.f;
+    pre_param.mean[2] = 0.f;
+    pre_param.norm[0] = 0.0039215686f;
+    pre_param.norm[1] = 0.0039215686f;
+    pre_param.norm[2] = 0.0039215686f;
     pre_param.width = 224;
     pre_param.height = 224;
     pre_param.swapRB = false;
+    pre_param.gray = false;
 
     if (parser.has("mean"))
     {
@@ -939,6 +953,11 @@ int main(int argc, char** argv)
     if (parser.has("swapRB"))
     {
         pre_param.swapRB = true;
+    }
+
+    if (parser.has("swapGray"))
+    {
+        pre_param.gray = true;
     }
 
     g_blob_pool_allocator.set_size_compare_ratio(0.0f);
