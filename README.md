@@ -174,3 +174,15 @@ ncnn 是一个为手机端极致优化的高性能神经网络前向计算框架
 
 [BSD 3 Clause](LICENSE.txt)
 
+#usage:
+编译给PC用，需要编tools里的工具。
+cmake ..
+ccmake .. (把不需要的编译项关闭，例如openmp)
+cmake ..
+make -j4
+
+编译给板子用，用xl.toolchasin。编给板子不需要编tools examples benchmark等，在ccmake里关掉。
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/himix100_xl.toolchain.cmake ..
+ccmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/himix100_xl.toolchain.cmake .. (关掉上述说的那些)
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/himix100_xl.toolchain.cmake ..
+make -j4
