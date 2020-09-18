@@ -42,7 +42,7 @@ int PriorBox::load_param(const ParamDict& pd)
     offset = pd.get(13, 0.f);
     step_mmdetection = pd.get(14, 0);
     center_mmdetection = pd.get(15, 0);
-
+    use_default_aspect_ratio = pd.get(16, 0);
     return 0;
 }
 
@@ -152,7 +152,8 @@ int PriorBox::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& to
     int num_max_size = max_sizes.w;
     int num_aspect_ratio = aspect_ratios.w;
 
-    int num_prior = num_min_size * num_aspect_ratio + num_min_size + num_max_size;
+    int num_prior = num_min_size * num_aspect_ratio + num_max_size;
+    if (use_default_aspect_ratio) num_prior += num_min_size;
     if (flip)
         num_prior += num_min_size * num_aspect_ratio;
 
@@ -183,22 +184,10 @@ int PriorBox::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& to
             {
                 float min_size = min_sizes[k];
 
-                // min size box
-                box_w = box_h = min_size;
-
-                box[0] = (center_x - box_w * 0.5f) / image_w;
-                box[1] = (center_y - box_h * 0.5f) / image_h;
-                box[2] = (center_x + box_w * 0.5f) / image_w;
-                box[3] = (center_y + box_h * 0.5f) / image_h;
-
-                box += 4;
-
-                if (num_max_size > 0)
+                if (use_default_aspect_ratio)
                 {
-                    float max_size = max_sizes[k];
-
-                    // max size box
-                    box_w = box_h = static_cast<float>(sqrt(min_size * max_size));
+                    // min size box
+                    box_w = box_h = min_size;
 
                     box[0] = (center_x - box_w * 0.5f) / image_w;
                     box[1] = (center_y - box_h * 0.5f) / image_h;
@@ -206,13 +195,31 @@ int PriorBox::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& to
                     box[3] = (center_y + box_h * 0.5f) / image_h;
 
                     box += 4;
+
+                    if (num_max_size > 0)
+                    {
+                        float max_size = max_sizes[k];
+
+                        // max size box
+                        box_w = box_h = static_cast<float>(sqrt(min_size * max_size));
+
+                        box[0] = (center_x - box_w * 0.5f) / image_w;
+                        box[1] = (center_y - box_h * 0.5f) / image_h;
+                        box[2] = (center_x + box_w * 0.5f) / image_w;
+                        box[3] = (center_y + box_h * 0.5f) / image_h;
+
+                        box += 4;
+                    }
                 }
 
                 // all aspect_ratios
                 for (int p = 0; p < num_aspect_ratio; p++)
                 {
                     float ar = aspect_ratios[p];
-
+		    if (fabs(ar - 1.) < 1e-6 && use_default_aspect_ratio)
+                    {
+                        continue;
+                    }
                     box_w = static_cast<float>(min_size * sqrt(ar));
                     box_h = static_cast<float>(min_size / sqrt(ar));
 

@@ -42,6 +42,7 @@ public:
     float offset;
     bool step_mmdetection;
     bool center_mmdetection;
+    bool use_default_aspect_ratio;
 };
 
 } // namespace ncnn
