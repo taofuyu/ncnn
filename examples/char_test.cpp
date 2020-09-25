@@ -16,6 +16,13 @@
 #include "gpu.h"
 #endif // NCNN_VULKAN
 
+//usage:
+//if dont want to save rcg wrong img:
+// ./char_test /path/to/test/img/  none  /path/to/xx.param   /path/to/xx.bin
+//if want to save rcg wrong img:
+// ./char_test /path/to/test/img/  /path/to/save/  /path/to/xx.param   /path/to/xx.bin
+
+
 struct RcgResult
 {
     float score;
@@ -155,10 +162,12 @@ int CopyFile(char* sourcefile, char* destfile)
 int main(int argc, char** argv)
 {
     char* imagepath = argv[1];
-    char* save_wrong_path = argv[2];
+    char* save_wrong_path = argv[2];//give "none" if no need to save img
     const char* param_path = argv[3];
     const char* bin_path = argv[4];
+
     std::string img_father_path = imagepath;
+    std::string save_path = save_wrong_path;
     std::vector<std::string> child_path;
     
     //class map
@@ -201,6 +210,7 @@ int main(int argc, char** argv)
             {
                 gt_province = splitted[j];
                 right_gt_cnt++;
+                break;
             }
         }
 
@@ -221,10 +231,9 @@ int main(int argc, char** argv)
         {
             right_cnt++;
         }
-        if ((gt_province != "") && (gt_province.find(province_result) == gt_province.npos))//如果gt车牌不为空，识别错了
+        if ((save_path != "none") && (gt_province != "") && (gt_province.find(province_result) == gt_province.npos))//如果gt车牌不为空，识别错了
         {
-            int a=0;
-            //CopyFile((char*)filenames[i].c_str(), save_wrong_path);
+            CopyFile((char*)filenames[i].c_str(), (char*)save_path.c_str());
         }
         if ((gt_province != "") && (gt_province.find(raw_rm_result) != gt_province.npos))//如果gt车牌不为空，原rm识别对了
         {
