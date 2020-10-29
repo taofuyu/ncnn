@@ -107,18 +107,14 @@ void benchmark(const char* comment, const ncnn::Mat& _in, const ncnn::Option& op
 #endif
     }
 
-    ncnn::Mat out0;
-    ncnn::Mat out1;
-    ncnn::Mat out2;
+    ncnn::Mat out;
 
     // warm up
     for (int i = 0; i < g_warmup_loop_count; i++)
     {
         ncnn::Extractor ex = net.create_extractor();
         ex.input("data", in);
-        ex.extract("output_s8", out0);
-        ex.extract("output_s16", out1);
-        ex.extract("output_s32", out2);
+        ex.extract("final_nms_box", out);
     }
 
     double time_min = DBL_MAX;
@@ -132,9 +128,7 @@ void benchmark(const char* comment, const ncnn::Mat& _in, const ncnn::Option& op
         {
             ncnn::Extractor ex = net.create_extractor();
             ex.input("data", in);
-            ex.extract("output_s8", out0);
-            ex.extract("output_s16", out1);
-            ex.extract("output_s32", out2);
+            ex.extract("final_nms_box", out);
         }
 
         double end = ncnn::get_current_time();
@@ -237,9 +231,13 @@ int main(int argc, char** argv)
     fprintf(stderr, "cooling_down = %d\n", (int)g_enable_cooling_down);
 
     // run
-    //benchmark("R11", ncnn::Mat(256, 448, 1), opt);
+    benchmark("R11", ncnn::Mat(448, 256, 1), opt);
+    benchmark("R11_int8", ncnn::Mat(448, 256, 1), opt);
+    benchmark("D1_int8", ncnn::Mat(448, 256, 1), opt);
+    benchmark("D1V2_int8", ncnn::Mat(448, 256, 1), opt);
+    benchmark("D1V2", ncnn::Mat(448, 256, 1), opt);
     //benchmark("R11_int8", ncnn::Mat(256, 448, 1), opt);
-    benchmark("yolov5n.256x448x1.int8", ncnn::Mat(256, 448, 1), opt);
+    //benchmark("yolov5n.256x448x1.int8", ncnn::Mat(256, 448, 1), opt);
 
     //benchmark("M21", ncnn::Mat(28, 28, 1), opt);
 

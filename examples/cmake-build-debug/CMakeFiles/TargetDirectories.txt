@@ -1,0 +1,3 @@
+/media/t/64006e9c-fffc-427f-b780-00c20066dffa/ncnn/examples/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/media/t/64006e9c-fffc-427f-b780-00c20066dffa/ncnn/examples/cmake-build-debug/CMakeFiles/edit_cache.dir
+/media/t/64006e9c-fffc-427f-b780-00c20066dffa/ncnn/examples/cmake-build-debug/CMakeFiles/examples.dir

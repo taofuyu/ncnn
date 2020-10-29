@@ -1,0 +1,4 @@
+Cannot generate into /media/t/64006e9c-fffc-427f-b780-00c20066dffa/ncnn
+It is already used for unknown project
+
+Please either delete it manually or select another generation directory
